@@ -142,14 +142,18 @@ func resolveIP(listen string) (string, error) {
 		return listen, nil
 	}
 
-	ips, err := iface.Addrs()
+	addrs, err := iface.Addrs()
 	if err != nil {
 		log.Fatal().Str("interface", hp[0]).Err(err).Msg("Cannot resolve IP")
 	}
 
-	ip := ips[0].(*net.IPNet).IP
-	log.Info().Stringer("IP", ip).Str("interface", hp[0]).Msg("Resolving IP for bind address")
-	return ip.String() + ":" + hp[1], nil
+	for _, addr := range addrs {
+		if ip := addr.(*net.IPNet).IP.To4(); ip != nil {
+			log.Info().Stringer("IP", ip).Str("interface", hp[0]).Msg("Resolving IP for bind address")
+			return ip.String() + ":" + hp[1], nil
+		}
+	}
+	return "", errors.New("interface does not have a IPv4 address")
 }
 
 // handleRequest processes all requests and delegates them to other handlers.
