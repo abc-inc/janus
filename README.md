@@ -26,10 +26,12 @@ Usage:
   janus [OPTIONS]
 
 Application Options:
-  -d, --server-root=   root directory to serve (default: .) [$JANUS_SERVER_ROOT]
-  -l, --listen=        host address and port to bind to (default: :8080) [$JANUS_LISTEN]
-  -p, --prefix=        prefix for the HTTP URLs (default: /) [$JANUS_PREFIX]
-  -u, --enable-upload  enables uploading of files by adding "?upload" [$JANUS_ENABLE_UPLOAD]
+  -b, --client-body-buffer-size= total number of kilobytes stored in memory (per upload) (default: 8)
+  -d, --server-root=             root directory to serve (default: .) [$JANUS_SERVER_ROOT]
+  -l, --listen=                  host address and port to bind to (default: :8080) [$JANUS_LISTEN]
+  -p, --prefix=                  prefix for the HTTP URLs (default: /) [$JANUS_PREFIX]
+  -u, --enable-upload            enable upload of files by adding "?upload" [$JANUS_ENABLE_UPLOAD]
+  -v, --version                  print version information
 
 Help Options:
   -h, --help           Show this help message

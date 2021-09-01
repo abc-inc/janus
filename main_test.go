@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 The janus authors
+Copyright © 2021 The janus authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -81,13 +81,15 @@ data
 
 func Test_handleUploadPage_UploadDisabled(t *testing.T) {
 	a := app{ServerRoot: ".", EnableUpload: false}
-	HTTPBodyContains(t, handleRequest(a), http.MethodGet, "http://localhost/", map[string][]string{"upload": {""}}, `<a href="main.go">main.go</a>`)
+	HTTPBodyContains(t, handleRequest(a), http.MethodGet, "http://localhost/",
+		map[string][]string{"upload": {""}}, `<a href="main.go">main.go</a>`)
 }
 
 func Test_handleUploadPage_UploadEnabled(t *testing.T) {
 	a := app{ServerRoot: ".", EnableUpload: true}
 	exp := `<form action="http://localhost" enctype="multipart/form-data" method="POST">`
-	HTTPBodyContains(t, handleRequest(a), http.MethodGet, "http://localhost/", map[string][]string{"upload": {""}}, exp)
+	HTTPBodyContains(t, handleRequest(a), http.MethodGet, "http://localhost/",
+		map[string][]string{"upload": {""}}, exp)
 }
 
 func Test_loadConfigDefault(t *testing.T) {

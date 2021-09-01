@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 The janus authors
+Copyright © 2021 The janus authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ func main() {
 	zerolog.DurationFieldInteger = true
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
 	if isatty.IsTerminal(os.Stdout.Fd()) {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: "2006-01-02 15:04:05.000"})
+		w := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: "2006-01-02 15:04:05.000"}
+		log.Logger = log.Output(w)
 	}
 
 	app := loadConfig(os.Args...)
@@ -56,6 +57,7 @@ func main() {
 	log.Info().
 		Bool("enable-upload", app.EnableUpload).
 		Str("listen", app.ListenAddress).
+		Uint32("client-body-buffer-size", app.BufferSizeKB).
 		Str("prefix", app.Prefix).
 		Str("server-root", app.ServerRoot).
 		Msg("Starting server")
@@ -78,6 +80,7 @@ func main() {
 
 // app holds all application properties.
 type app struct {
+	BufferSizeKB  uint32 `short:"b" long:"client-body-buffer-size" description:"total number of kilobytes stored in memory (per upload)" default:"8"`
 	ServerRoot    string `short:"d" long:"server-root" description:"root directory to serve" env:"JANUS_SERVER_ROOT" default:"."`
 	ListenAddress string `short:"l" long:"listen" description:"host address and port to bind to" env:"JANUS_LISTEN" default:":8080"`
 	Prefix        string `short:"p" long:"prefix" description:"prefix for the HTTP URLs" env:"JANUS_PREFIX" default:"/"`
@@ -109,7 +112,8 @@ func (w *ctxResponseWriter) WriteHeader(status int) {
 func loadConfig(args ...string) (app app) {
 	p := flags.NewParser(&app, flags.Default)
 	if _, err := p.ParseArgs(args); err != nil {
-		if f, ok := err.(*flags.Error); ok && f.Type != flags.ErrHelp {
+		var fErr *flags.Error
+		if errors.As(err, &fErr) && fErr.Type != flags.ErrHelp {
 			p.WriteHelp(os.Stderr)
 		}
 		os.Exit(1)
@@ -153,7 +157,7 @@ func resolveIP(listen string) (string, error) {
 			return ip.String() + ":" + hp[1], nil
 		}
 	}
-	return "", errors.New("interface does not have a IPv4 address")
+	return "", errors.New("interface does not have an IPv4 address")
 }
 
 // handleRequest processes all requests and delegates them to other handlers.
@@ -225,7 +229,7 @@ func handleUploadPage(a app, t *template.Template) http.HandlerFunc {
 // handleFileUpload processes multipart/form-data file upload requests.
 func handleFileUpload(a app) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseMultipartForm(1 << 10); err != nil {
+		if err := r.ParseMultipartForm(int64(a.BufferSizeKB * 1024)); err != nil {
 			renderError(w, err, "cannot parse multipart form", http.StatusInternalServerError)
 			return
 		}
@@ -235,7 +239,16 @@ func handleFileUpload(a app) http.HandlerFunc {
 			renderError(w, err, "invalid file", http.StatusBadRequest)
 			return
 		}
-		defer f.Close()
+
+		// https://github.com/golang/go/issues/20253
+		// mime/multipart: TempFile file hangs around on disk after usage in multipart/formdata.go
+		defer func() {
+			if err := f.Close(); err != nil {
+				log.Warn().Str("name", h.Filename).Msg("cannot close upload temp file")
+			} else if err := r.MultipartForm.RemoveAll(); err != nil {
+				log.Warn().Str("name", h.Filename).Msg("cannot delete upload temp file")
+			}
+		}()
 
 		p := filepath.Join(a.ServerRoot, r.URL.Path, h.Filename)
 		newFile, err := os.Create(p)
@@ -246,6 +259,7 @@ func handleFileUpload(a app) http.HandlerFunc {
 		defer newFile.Close()
 
 		if _, err := io.Copy(newFile, f); err != nil || newFile.Close() != nil {
+			_ = os.Remove(newFile.Name())
 			renderError(w, err, "cannot write file", http.StatusInternalServerError)
 			return
 		}
