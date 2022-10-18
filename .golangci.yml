@@ -2,26 +2,29 @@ linters:
   disable-all: true
   enable:
     # default
-    - deadcode
     - errcheck
     - gosimple
     - govet
     - ineffassign
     - staticcheck
-    - structcheck
     - typecheck
     - unused
-    - varcheck
     # additional
+    - asasalint
     - bodyclose
+    - dupl
+    - errname
     - errorlint
-    - gochecknoinits
+    - exhaustive
+    - exportloopref
     - gocognit
     - goconst
     - gocritic
     - gocyclo
+    - godox
     - goimports
     - gosec
+    - lll
     - misspell
     - nolintlint
     - prealloc
@@ -30,3 +33,11 @@ linters:
     - unconvert
     - unparam
     - whitespace
+
+linters-settings:
+  gocritic:
+    disabled-checks:
+      - ifElseChain
+  whitespace:
+    multi-if: true
+    multi-func: true

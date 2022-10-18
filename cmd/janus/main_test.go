@@ -19,7 +19,6 @@ package main
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -58,7 +57,7 @@ data
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "http://localhost/", bytes.NewBufferString("test"))
 	r.Header.Set("Content-Type", `multipart/form-data; boundary=xxx`)
-	r.Body = ioutil.NopCloser(bytes.NewBufferString(postData))
+	r.Body = io.NopCloser(bytes.NewBufferString(postData))
 
 	// initialize handler
 	a := app{ServerRoot: "tmp", EnableUpload: true}
@@ -74,7 +73,7 @@ data
 	Equal(t, "file uploaded successfully.\n", w.Body.String())
 
 	// validate upload
-	d, err := ioutil.ReadFile(p)
+	d, err := os.ReadFile(p)
 	NoError(t, err)
 	Equal(t, "data", string(d))
 }

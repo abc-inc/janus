@@ -79,6 +79,8 @@ func main() {
 }
 
 // app holds all application properties.
+//
+//nolint:lll
 type app struct {
 	BufferSizeKB  uint32 `short:"b" long:"client-body-buffer-size" description:"total number of kilobytes stored in memory (per upload)" default:"8"`
 	ServerRoot    string `short:"d" long:"server-root" description:"root directory to serve" env:"JANUS_SERVER_ROOT" default:"."`
