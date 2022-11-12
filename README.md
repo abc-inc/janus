@@ -1,8 +1,8 @@
-# janus
+# Janus
 
-*janus* is a no-configuration, single binary file server.
+*Janus* is a no-configuration, single binary file server.
 
-## Why *janus*?
+## Why *Janus*?
 
 In ancient Roman religion, Janus (/ˈdʒeɪnəs/ JAY-nəs; Latin: IANVS (Iānus), pronounced [ˈjaːnʊs]) is the god of gates, transitions, doorways, passages, frames and more.
 He is usually depicted as having two faces, since he looks to the future and to the past.
@@ -17,7 +17,7 @@ go get -v github.com/abc-inc/janus
 
 ## Simple Usage & Directory Listing
 
-*janus* requires no configuration file.
+*Janus* requires no configuration file.
 All options are set via command line flags and/or environment variables.
 A list of options can be displayed by invoking `janus -h`:
 
@@ -37,13 +37,13 @@ Help Options:
   -h, --help           Show this help message
 ```
 
-For example, the following command starts *janus* serving the current directory (and restricts access to localhost only):
+For example, the following command starts *Janus* serving the current directory (and restricts access to localhost only):
 
 ```shell script
 janus -l localhost:8080
 ```
 
-When accessing a file, *janus* will stream its content.
+When accessing a file, *Janus* will stream its content.
 Additionally, it supports directory listing e.g.,
 
 ```shell script
@@ -67,7 +67,7 @@ outputs
 ```
 
 The `listen` argument also supports interface names in addition to IP addresses and hostnames.
-The following example starts *janus* listening on the IP of `eth0` at port `8081`:
+The following example starts *Janus* listening on the IP of `eth0` at port `8081`:
 
 ```
 janus -l eth0:8081
@@ -78,9 +78,9 @@ janus -l eth0:8081
 ## Upload
 
 For security reasons file upload is disabled by default.
-When enabled, `janus` accepts HTTP POST requests (multipart/form-data) and stores the file in the directory where the URL is pointing to.
+When enabled, `Janus` accepts HTTP POST requests (multipart/form-data) and stores the file in the directory where the URL is pointing to.
 
-The following example starts `janus` and configures it to take files sent to `http://<HOST>:8080/files` and saves them in the `uploads` directory.
+The following example starts `Janus` and configures it to take files sent to `http://<HOST>:8080/files` and saves them in the `uploads` directory.
 
 ```shell script
 janus -d uploads -p /files -u
@@ -98,4 +98,4 @@ The uploaded file will be saved as `uploads/images/logo.png`.
 
 * https://github.com/syntaqx/serve
 
-  *janus* is heavily inspired by *serve*, which is an excellent file server with more features such as Basic authentication and TLS.
+  *Janus* is heavily inspired by *serve*, which is an excellent file server with more features such as Basic authentication and TLS.
